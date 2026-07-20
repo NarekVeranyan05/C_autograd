@@ -13,6 +13,93 @@
 volatile int successes;
 volatile int failures;
 
+void test_tensor_add()
+{
+    int shape[2] = {1, 1};
+    struct Tensor *t1 = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *t2 = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+
+    t1->data[0] = 3;
+    t2->data[0] = 4.5;
+    expected->data[0] = 7.5;
+
+    struct Tensor *res = tensor_add(t1, t2);
+    if (check_equal(expected, res))
+    {
+        printf("SUCCESS: scalar addition returns as expected.\n");
+        successes++;
+    }
+    else
+    {
+        printf("FAILURE: scalar addition failed.\n");
+        failures++;
+    }
+
+    tensor_destruct(t1);
+    tensor_destruct(t2);
+    tensor_destruct(expected);
+    tensor_destruct(res);
+}
+
+void test_tensor_addition()
+{
+    int shape1[3] = {3, 3, 2}, shape2[3] = {3, 3, 2};
+    struct Tensor *t1 = create_tensor(shape1, 3, NULL, 0, MATMUL);
+    struct Tensor *t2 = create_tensor(shape2, 3, NULL, 0, MATMUL);
+
+    const double d1[18] = {
+        1, -1, 4,
+        0, 3, 2,
+        2, 1, 0,
+
+        1, 5, -3,
+        7, 8, 11,
+        -20, 8, 90
+    };
+    memcpy(t1->data, d1, 9 * sizeof(double));
+    const double d2[18] = {
+        3, 1, 2,
+        2, 1, 0,
+        1, 4, 5,
+
+        88, 12, 9,
+        33, -41, 22,
+        1, 23, 0
+    };
+    memcpy(t2->data, d2, 9 * sizeof(double));
+
+    int shape[3] = {3, 3, 2};
+    struct Tensor *expected = create_tensor(shape, 3, NULL, 0, MATMUL);
+    double const exp[18] = {
+        4, 0, 6,
+        2, 4, 2,
+        3, 5, 5,
+
+        89, 17, 6,
+        40, -33, 33,
+        -19, 31, 90
+    };
+    memcpy(expected->data, exp, 9 * sizeof(double));
+
+    struct Tensor *res = tensor_add(t1, t2);
+    if (check_equal(expected, res))
+    {
+        printf("SUCCESS: square matrix matmul returns as expected.\n");
+        successes++;
+    }
+    else
+    {
+        printf("FAILURE: square matrix matmul failed.\n");
+        failures++;
+    }
+
+    tensor_destruct(t1);
+    tensor_destruct(t2);
+    tensor_destruct(expected);
+    tensor_destruct(res);
+}
+
 void test_scalar_matmul()
 {
     int shape[2] = {1, 1};
@@ -21,7 +108,8 @@ void test_scalar_matmul()
     struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
 
     t1->data[0] = 3;
-    t1->data[1] = 4.5;
+    t2->data[0] = 4.5;
+    expected->data[0] = 13.5;
 
     struct Tensor *res = tensor_matmul(t1, t2);
     if (check_equal(expected, res))
@@ -35,14 +123,10 @@ void test_scalar_matmul()
         failures++;
     }
 
-    free(t1->data);
-    free(t2->data);
-    free(expected->data);
-    free(res->data);
-    free(t1);
-    free(t2);
-    free(expected);
-    free(res);
+    tensor_destruct(t1);
+    tensor_destruct(t2);
+    tensor_destruct(expected);
+    tensor_destruct(res);
 }
 
 void test_vec_matmul()
@@ -70,14 +154,10 @@ void test_vec_matmul()
         failures++;
     }
 
-    free(t1->data);
-    free(t2->data);
-    free(expected->data);
-    free(res->data);
-    free(t1);
-    free(t2);
-    free(expected);
-    free(res);
+    tensor_destruct(t1);
+    tensor_destruct(t2);
+    tensor_destruct(expected);
+    tensor_destruct(res);
 }
 
 void test_square_matmul()
@@ -108,14 +188,10 @@ void test_square_matmul()
         failures++;
     }
 
-    free(t1->data);
-    free(t2->data);
-    free(expected->data);
-    free(res->data);
-    free(t1);
-    free(t2);
-    free(expected);
-    free(res);
+    tensor_destruct(t1);
+    tensor_destruct(t2);
+    tensor_destruct(expected);
+    tensor_destruct(res);
 }
 
 void test_non_square_matmul()
@@ -146,14 +222,10 @@ void test_non_square_matmul()
         failures++;
     }
 
-    free(t1->data);
-    free(t2->data);
-    free(expected->data);
-    free(res->data);
-    free(t1);
-    free(t2);
-    free(expected);
-    free(res);
+    tensor_destruct(t1);
+    tensor_destruct(t2);
+    tensor_destruct(expected);
+    tensor_destruct(res);
 }
 
 void test_tensor_scalar_mul()
@@ -178,14 +250,10 @@ void test_tensor_scalar_mul()
         failures++;
     }
 
-    free(t1->data);
-    free(t2->data);
-    free(expected->data);
-    free(res->data);
-    free(t1);
-    free(t2);
-    free(expected);
-    free(res);
+    tensor_destruct(t1);
+    tensor_destruct(t2);
+    tensor_destruct(expected);
+    tensor_destruct(res);
 }
 
 void test_vec_mul()
@@ -212,18 +280,13 @@ void test_vec_mul()
         failures++;
     }
 
-    free(t1->data);
-    free(t2->data);
-    free(expected->data);
-    free(res->data);
-    free(t1);
-    free(t2);
-    free(expected);
-    free(res);
+    tensor_destruct(t1);
+    tensor_destruct(t2);
+    tensor_destruct(expected);
+    tensor_destruct(res);
 }
 
-void test_matrix_mul()
-{
+void test_matrix_mul() {
     int shape1[2] = {3, 5}, shape2[2] = {3, 5};
     struct Tensor *t1 = create_tensor(shape1, 2, NULL, 0, MATMUL);
     struct Tensor *t2 = create_tensor(shape2, 2, NULL, 0, MATMUL);
@@ -250,14 +313,10 @@ void test_matrix_mul()
         failures++;
     }
 
-    free(t1->data);
-    free(t2->data);
-    free(expected->data);
-    free(res->data);
-    free(t1);
-    free(t2);
-    free(expected);
-    free(res);
+    tensor_destruct(t1);
+    tensor_destruct(t2);
+    tensor_destruct(expected);
+    tensor_destruct(res);
 }
 
 void test_scalar_transpose()
@@ -308,12 +367,9 @@ void test_vector_transpose()
         failures++;
     }
 
-    free(t->data);
-    free(res->data);
-    free(expected->data);
-    free(t);
-    free(res);
-    free(expected);
+    tensor_destruct(t);
+    tensor_destruct(res);
+    tensor_destruct(expected);
 }
 
 void test_matrix_transpose()
@@ -352,15 +408,14 @@ void test_matrix_transpose()
         failures++;
     }
 
-    free(t->data);
-    free(res->data);
-    free(expected->data);
-    free(t);
-    free(res);
-    free(expected);
+    tensor_destruct(t);
+    tensor_destruct(expected);
 }
 
 int main() {
+    test_tensor_add();
+    test_tensor_addition();
+
     test_scalar_matmul();
     test_vec_matmul();
     test_square_matmul();
