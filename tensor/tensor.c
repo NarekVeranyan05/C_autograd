@@ -15,8 +15,15 @@ struct Tensor *create_tensor(int *shape, int ndims, struct Tensor **parents, int
     assert(ndims >= 2);
 
     struct Tensor *t = malloc(sizeof(struct Tensor));
-    t->data = malloc(sizeof(double) * shape[0] * shape[1]);
-    t->shape = malloc(sizeof(double) * ndims);
+
+    int size = 1;
+    for (int i = 0; i < ndims; i++)
+    {
+        size *= shape[i];
+    }
+    t->data = malloc(sizeof(double) * size);
+
+    t->shape = malloc(sizeof(int) * ndims);
     for (int i = 0; i < ndims; i++)
     {
         t->shape[i] = shape[i];

@@ -18,10 +18,10 @@
 void backward_sum(struct Tensor *self);
 
 /**
- * Computes gradients for parent-multiplicands
+ * Computes gradients for parent-multiplicands (matmul)
  * @param self – the current tensor generated as a product
  */
-void backward_mul(struct Tensor *self);
+void backward_matmul(struct Tensor *self);
 
 /**
  * Computes gradients for parent through tanh
@@ -40,5 +40,11 @@ void backward_sigmoid(struct Tensor *self);
  * @param self – the current tensor generated as a ReLU from the parent
  */
 void backward_ReLU(struct Tensor *self);
+
+/**
+ * Computes gradients for parent through transpose
+ * @param self – the current tensor generated as a ReLU from the parent
+ */
+void backward_transpose(struct Tensor *self);
 
 #endif //UNTITLED_BACKWARD_H
