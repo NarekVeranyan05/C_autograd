@@ -7,7 +7,6 @@
 #include <stdbool.h>
 #include "./tensor.h"
 #include <math.h>
-
 #include <stdio.h>
 
 struct Tensor *create_tensor(int *shape, int ndims, struct Tensor **parents, int num_parents, enum Operation op)
@@ -151,8 +150,157 @@ struct Tensor *tensor_transpose(struct Tensor *t)
     return transposed;
 }
 
+const double epsilon = 0.0001;
+
+struct Tensor *tensor_invert(struct Tensor *t)
+{
+    struct Tensor *parents[1] = {t};
+    struct Tensor *inverse = create_tensor(t->shape, t->ndims, parents, 1, INVERSE);
+
+    int size = 1;
+    for (int i = 0; i < t->ndims; i++)
+        size *= t->shape[i];
+
+    for (int i = 0; i < size; i++)
+        inverse->data[i] = 1 / (t->data[i] + epsilon);
+
+    return inverse;
+}
+
+struct Tensor *tensor_negate(struct Tensor *t)
+{
+    const double epsilon = 0.0001;
+
+    struct Tensor *parents[1] = {t};
+    struct Tensor *negation = create_tensor(t->shape, t->ndims, parents, 1, NEGATION);
+
+    int size = 1;
+    for (int i = 0; i < t->ndims; i++)
+        size *= t->shape[i];
+
+    for (int i = 0; i < size; i++)
+        negation->data[i] = -(t->data[i]);
+
+    return negation;
+}
+
+struct Tensor *tensor_log(struct Tensor *t)
+{
+    struct Tensor *parents[1] = {t};
+    struct Tensor *logged = create_tensor(t->shape, t->ndims, parents, 1, INVERSE);
+
+    int size = 1;
+    for (int i = 0; i < t->ndims; i++)
+        size *= t->shape[i];
+
+    for (int i = 0; i < size; i++)
+        logged->data[i] = log(t->data[i]);
+
+    return logged;
+}
+
+struct Tensor *tensor_exp(struct Tensor *t)
+{
+    struct Tensor *parents[1] = {t};
+    struct Tensor *exponential = create_tensor(t->shape, t->ndims, parents, 1, INVERSE);
+
+    int size = 1;
+    for (int i = 0; i < t->ndims; i++)
+        size *= t->shape[i];
+
+    for (int i = 0; i < size; i++)
+        exponential->data[i] = exp(t->data[i]);
+
+    return exponential;
+}
+
+struct Tensor *tensor_ReLU(struct Tensor *t)
+{
+    struct Tensor *parents[1] = {t};
+    struct Tensor *tensor_activated = create_tensor(t->shape, t->ndims, parents, 1, RELU);
+
+    int size = 1;
+    for (int i = 0; i < t->ndims; i++)
+        size *= t->shape[i];
+
+    for (int i = 0; i < size; i++)
+        tensor_activated->data[i] = (t->data[i] <= 0) ? 0 : t->data[i];
+
+    return tensor_activated;
+}
+
+struct Tensor *tensor_sigmoid(struct Tensor *t)
+{
+    struct Tensor *parents[1] = {t};
+    struct Tensor *tensor_activated = create_tensor(t->shape, t->ndims, parents, 1, SIGMOID);
+
+    int size = 1;
+    for (int i = 0; i < t->ndims; i++)
+        size *= t->shape[i];
+
+    for (int i = 0; i < size; i++)
+    {
+        tensor_activated->data[i] = 1 / ( 1 + exp( -t->data[i] ) );
+    }
+
+    return tensor_activated;
+}
+
+struct Tensor *tensor_softmax(struct Tensor *t)
+{
+    assert(t->ndims == 2 && (t->shape[0] == 1 || t->shape[1] == 1));
+
+    int size = t->shape[0] * t->shape[1];
+
+    // computing the exponents for scalars
+    struct Tensor *parents[1] = {t};
+    struct Tensor *exponents = create_tensor(t->shape, t->ndims, parents, 1, SOFTMAX);
+    double sum_of_exponents = 0;
+    for (int i = 0; i < size; i++)
+    {
+        exponents->data[i] = exp(t->data[i]);
+        sum_of_exponents += exponents->data[i];
+    }
+    for (int i = 0; i < size; i++)
+        exponents->data[i] /= sum_of_exponents;
+
+    return exponents;
+}
+
+struct Tensor *tensor_selector(struct Tensor *t, int index)
+{
+    assert(t->ndims == 2 && (t->shape[0] == 1 || t->shape[1] == 1));
+
+    struct Tensor *selected = NULL;
+
+    if (t->shape[0] != 1) // n x 1
+    {
+        // initialising indicator
+        int shape[2] = { 1, t->shape[0] }; // 1 x n
+        struct Tensor *indicator = create_tensor(shape, t->ndims, NULL, 0, UNDEF);
+        init_empty(indicator);
+        indicator->data[index] = 1;
+
+        selected = tensor_mul(indicator, t);
+    }
+    else // 1 x n
+    {
+        // initialising indicator
+        int shape[2] = { t->shape[1], 1 }; // n x 1
+        struct Tensor *indicator = create_tensor(shape, t->ndims, NULL, 0, UNDEF);
+        init_empty(indicator);
+        indicator->data[index] = 1;
+
+        selected = tensor_mul(t, indicator);
+    }
+
+    return selected;
+}
+
 bool check_equal(struct Tensor *a, struct Tensor *b)
 {
+    const double epsilon = 1e-4f;
+
     assert(a->ndims == b->ndims);
     for (int i = 0; i < a->ndims; i++)
         assert(a->shape[i] == b->shape[i]);
@@ -163,7 +311,7 @@ bool check_equal(struct Tensor *a, struct Tensor *b)
         size *= a->shape[i];
 
     for (int i = 0; i < size; i++)
-        equal &= ( fabs(a->data[i] - b->data[i]) < 0.0001 );
+        equal &= ( fabs(a->data[i] - b->data[i]) < epsilon );
 
     return equal;
 }

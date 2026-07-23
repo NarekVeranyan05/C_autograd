@@ -9,11 +9,12 @@
 #include "./tensor.h"
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 volatile int successes;
 volatile int failures;
 
-void test_tensor_add()
+void test_scalar_tensor_add()
 {
     int shape[2] = {1, 1};
     struct Tensor *t1 = create_tensor(shape, 2, NULL, 0, MATMUL);
@@ -42,7 +43,7 @@ void test_tensor_add()
     tensor_destruct(res);
 }
 
-void test_tensor_addition()
+void test_multidims_tensor_add()
 {
     int shape1[3] = {3, 3, 2}, shape2[3] = {3, 3, 2};
     struct Tensor *t1 = create_tensor(shape1, 3, NULL, 0, MATMUL);
@@ -85,12 +86,12 @@ void test_tensor_addition()
     struct Tensor *res = tensor_add(t1, t2);
     if (check_equal(expected, res))
     {
-        printf("SUCCESS: square matrix matmul returns as expected.\n");
+        printf("SUCCESS: tensor addition returns as expected.\n");
         successes++;
     }
     else
     {
-        printf("FAILURE: square matrix matmul failed.\n");
+        printf("FAILURE: tensor addition failed.\n");
         failures++;
     }
 
@@ -412,9 +413,124 @@ void test_matrix_transpose()
     tensor_destruct(expected);
 }
 
+extern const double epsilon;
+
+void test_tensor_invert()
+{
+    int shape[2] = {3, 5};
+    struct Tensor *t = create_tensor(shape, 2, NULL, 0, MATMUL);
+
+    const double d[15] = {
+        1, -5, 0, 11, -20,
+        6, 7, -30, -12, 10,
+        11, 12, 0, -1, -15
+    };
+    memcpy(t->data, d, 15 * sizeof(double));
+
+    struct Tensor *t_inverted_exp = create_tensor(shape, 2, NULL, 0, MATMUL);
+    const double exp[15] = {
+        (1 / (epsilon + 1)), (1/ (epsilon - 5)), (1/epsilon), (1 / (epsilon + 11)), (1 / (epsilon - 20)),
+        (1 / (epsilon + 6)), (1 / (epsilon + 7)), (1 / (epsilon - 30)), (1 / (epsilon - 12)), (1 / (epsilon + 10)),
+        (1 / (epsilon + 11)), (1 / (epsilon + 12)), (1 / epsilon), (1 / (epsilon - 1)), (1 / (epsilon - 15))
+    };
+    memcpy(t_inverted_exp->data, exp, 15 * sizeof(double));
+
+    struct Tensor *t_inverted = tensor_invert(t);
+
+    if (check_equal(t_inverted, t_inverted_exp))
+    {
+        printf("SUCCESS: inversion returns as expected.\n");
+        successes++;
+    }
+    else
+    {
+        printf("FAILURE: inversion failed.\n");
+        failures++;
+    }
+
+    tensor_destruct(t);
+    tensor_destruct(t_inverted_exp);
+    tensor_destruct(t_inverted);
+}
+
+void test_tensor_ReLU()
+{
+    int shape[2] = {3, 5};
+    struct Tensor *t = create_tensor(shape, 2, NULL, 0, MATMUL);
+
+    const double d[15] = {
+        1, -5, 0, 11, -20,
+        6, 7, -30, -12, 10,
+        11, 12, 0, -1, -15
+    };
+    memcpy(t->data, d, 15 * sizeof(double));
+
+    struct Tensor *t_activated_exp = create_tensor(shape, 2, NULL, 0, MATMUL);
+    const double exp[15] = {
+        1, 0, 0, 11, 0,
+        6, 7, 0, 0, 10,
+        11, 12, 0, 0, 0
+    };
+    memcpy(t_activated_exp->data, exp, 15 * sizeof(double));
+
+    struct Tensor *t_activated = tensor_ReLU(t);
+
+    if (check_equal(t_activated, t_activated_exp))
+    {
+        printf("SUCCESS: ReLU returns as expected.\n");
+        successes++;
+    }
+    else
+    {
+        printf("FAILURE: ReLU failed.\n");
+        failures++;
+    }
+
+    tensor_destruct(t);
+    tensor_destruct(t_activated_exp);
+    tensor_destruct(t_activated);
+}
+
+void test_vector_softmax()
+{
+    int shape[2] = {5, 1};
+    struct Tensor *t = create_tensor(shape, 2, NULL, 0, MATMUL);
+    t->data[0] = 1;
+    t->data[1] = -1;
+    t->data[2] = 0;
+    t->data[3] = 2;
+    t->data[4] = -2;
+
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    expected->data[0] = 0.234122;
+    expected->data[1] = 0.031685;
+    expected->data[2] = 0.086129;
+    expected->data[3] = 0.636409;
+    expected->data[4] = 0.011656;
+
+    struct Tensor *softmax = tensor_softmax(t);
+    for (int i = 0; i < 5; i++)
+        softmax->data[i] = ceil(softmax->data[i] * 1000000.0) / 1000000.0;
+
+    if (check_equal(softmax, expected))
+    {
+        printf("SUCCESS: Softmax returns as expected.\n");
+        successes++;
+    }
+    else
+    {
+        printf("FAILURE: Softmax failed.\n");
+        failures++;
+    }
+
+    tensor_destruct(t);
+    tensor_destruct(expected);
+    tensor_destruct(softmax);
+}
+
 int main() {
-    test_tensor_add();
-    test_tensor_addition();
+    test_scalar_tensor_add();
+    test_multidims_tensor_add();
 
     test_scalar_matmul();
     test_vec_matmul();
@@ -428,6 +544,12 @@ int main() {
     test_scalar_transpose();
     test_vector_transpose();
     test_matrix_transpose();
+
+    test_tensor_invert();
+
+    test_tensor_ReLU();
+
+    test_vector_softmax();
 
     printf("\nTotal tests: %d\n", successes + failures);
     printf("Total successes: %d\n", successes);

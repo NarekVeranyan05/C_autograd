@@ -9,6 +9,7 @@
 #include "./tensor.h"
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "backward.h"
 
@@ -247,6 +248,166 @@ void test_matrix_backward_matmul()
     tensor_destruct(v2_grad_expected);
 }
 
+void test_scalar_backward_sigmoid()
+{
+    int shape[2] = {1, 1};
+    struct Tensor *v1 = create_tensor(shape, 2, NULL, 0, MATMUL);
+    v1->data[0] = 5;
+
+    struct Tensor *v2 = tensor_sigmoid(v1);
+    init_grad(v2);
+    v2->grad->data[0] = 3;
+    v2->backward = backward_sigmoid;
+
+    v2->backward(v2);
+
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    expected->data[0] = 3 * exp(-5) / pow(1 + exp(-5), 2);
+
+    if (check_equal(expected, v1->grad))
+    {
+        printf("SUCCESS: scalar backward sigmoid updates grads expected.\n");
+        successes++;
+    }
+    else
+    {
+        printf("FAILURE: scalar backward sigmoid grad updates failed.\n");
+        failures++;
+    }
+
+    tensor_destruct(v1);
+    tensor_destruct(v2);
+    tensor_destruct(expected);
+}
+
+void test_vector_backward_sigmoid()
+{
+    int shape[2] = {3, 1};
+    struct Tensor *v1 = create_tensor(shape, 2, NULL, 0, MATMUL);
+    v1->data[0] = 5, v1->data[1] = 6, v1->data[2] = -5;
+
+    struct Tensor *v2 = tensor_sigmoid(v1);
+    init_grad(v2);
+    v2->grad->data[0] = 3, v2->grad->data[1] = 4, v2->grad->data[2] = 5;
+    v2->backward = backward_sigmoid;
+
+    v2->backward(v2);
+
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    expected->data[0] = 3 * exp(-5) / pow(1 + exp(-5), 2);
+    expected->data[1] = 4 * exp(-6) / pow(1 + exp(-6), 2);
+    expected->data[2] = 5 * exp(5) / pow(1 + exp(5), 2);
+
+    if (check_equal(expected, v1->grad))
+    {
+        printf("SUCCESS: vector backward sigmoid updates grads expected.\n");
+        successes++;
+    }
+    else
+    {
+        printf("FAILURE: vector backward sigmoid grad updates failed.\n");
+        failures++;
+    }
+
+    tensor_destruct(v1);
+    tensor_destruct(v2);
+    tensor_destruct(expected);
+}
+
+void test_scalar_backward_ReLU1()
+{
+    int shape[2] = {1, 1};
+    struct Tensor *v1 = create_tensor(shape, 2, NULL, 0, MATMUL);
+    v1->data[0] = 8;
+
+    struct Tensor *v2 = tensor_ReLU(v1);
+    init_grad(v2);
+    v2->grad->data[0] = 3;
+    v2->backward = backward_ReLU;
+
+    v2->backward(v2);
+
+    struct Tensor *exp = create_tensor(shape, 2, NULL, 0, MATMUL);
+    exp->data[0] = 3;
+
+    if (check_equal(exp, v1->grad))
+    {
+        printf("SUCCESS: scalar backward ReLU updates grads expected.\n");
+        successes++;
+    }
+    else
+    {
+        printf("FAILURE: scalar backward ReLU grad updates failed.\n");
+        failures++;
+    }
+
+    tensor_destruct(v1);
+    tensor_destruct(v2);
+    tensor_destruct(exp);
+}
+
+void test_scalar_backward_ReLU2()
+{
+    int shape[2] = {1, 1};
+    struct Tensor *v1 = create_tensor(shape, 2, NULL, 0, MATMUL);
+    v1->data[0] = -8;
+
+    struct Tensor *v2 = tensor_ReLU(v1);
+    init_grad(v2);
+    v2->grad->data[0] = 3;
+    v2->backward = backward_ReLU;
+
+    v2->backward(v2);
+
+    struct Tensor *exp = create_tensor(shape, 2, NULL, 0, MATMUL);
+    exp->data[0] = 0;
+
+    if (check_equal(exp, v1->grad))
+    {
+        printf("SUCCESS: scalar backward ReLU updates grads expected.\n");
+        successes++;
+    }
+    else
+    {
+        printf("FAILURE: scalar backward ReLU grad updates failed.\n");
+        failures++;
+    }
+
+    tensor_destruct(v1);
+    tensor_destruct(v2);
+    tensor_destruct(exp);
+}
+
+void test_backward_softmax()
+{
+    int shape[2] = {1, 1};
+    struct Tensor *t[5] = {
+        create_tensor(shape, 2, NULL, 0, MATMUL),
+        create_tensor(shape, 2, NULL, 0, MATMUL),
+        create_tensor(shape, 2, NULL, 0, MATMUL),
+        create_tensor(shape, 2, NULL, 0, MATMUL),
+        create_tensor(shape, 2, NULL, 0, MATMUL)
+    };
+    t[0]->data[0] = 1;
+    t[1]->data[0] = -1;
+    t[2]->data[0] = 0;
+    t[3]->data[0] = 2;
+    t[4]->data[0] = -2;
+
+    struct Tensor *grad_expected[5] = {
+        create_tensor(shape, 2, NULL, 0, MATMUL),
+        create_tensor(shape, 2, NULL, 0, MATMUL),
+        create_tensor(shape, 2, NULL, 0, MATMUL),
+        create_tensor(shape, 2, NULL, 0, MATMUL),
+        create_tensor(shape, 2, NULL, 0, MATMUL)
+    };
+    grad_expected[0]->data[0] = 0.234122;
+    grad_expected[1]->data[0] = 0.031685;
+    grad_expected[2]->data[0] = 0.086129;
+    grad_expected[3]->data[0] = 0.636409;
+    grad_expected[4]->data[0] = 0.011656;
+}
+
 int main() {
     test_scalar_backward_sum();
     test_vec_backward_sum();
@@ -255,6 +416,12 @@ int main() {
     test_vec_backward_matmul_1();
     test_vec_backward_matmul_2();
     test_matrix_backward_matmul();
+
+    test_scalar_backward_sigmoid();
+    test_vector_backward_sigmoid();
+
+    test_scalar_backward_ReLU1();
+    test_scalar_backward_ReLU2();
 
     printf("\nTotal tests: %d\n", successes + failures);
     printf("Total successes: %d\n", successes);

@@ -8,11 +8,15 @@
 #include <stdbool.h>
 
 enum Operation {
+    UNDEF,
     SUM,
     MATMUL,
     MUL,
     TRANSPOSE,
+    INVERSE,
+    NEGATION,
     SIGMOID,
+    SOFTMAX,
     RELU,
     EXP,
     LOG,
@@ -93,6 +97,69 @@ struct Tensor *tensor_add(struct Tensor *a, struct Tensor *b);
  * @note t must have ndims less than or equal to 2.
  */
 struct Tensor *tensor_transpose(struct Tensor *t);
+
+/**
+ * Takes the reciprocal of a tensor.
+ * @param t - the tensor to invert
+ * @return a tensor with inverted elements of t. An element of 0 is relpaced with 1/epsilon,
+ * where epsilon is a positive number close to 0.
+ */
+struct Tensor *tensor_invert(struct Tensor *t);
+
+/**
+ * Takes the negation of a tensor.
+ * @param t - the tensor to negate
+ * @return a tensor with negated elements of t
+ */
+struct Tensor *tensor_negate(struct Tensor *t);
+
+/**
+ * Passes a tensor through the natural logarithm function
+ * @param t - the tensor to pass through log
+ * @return a tensor of same dimensions, with each entry equaling
+ * to the natural logarithm of the corresponding entry in t
+ */
+struct Tensor *tensor_log(struct Tensor *t);
+
+/**
+ * Passes a tensor through the exponential function
+ * @param t - the tensor to pass through exp
+ * @return a tensor of same dimensions, with each entry equaling
+ * to the exponential function of the corresponding entry in t
+ */
+struct Tensor *tensor_exp(struct Tensor *t);
+
+/**
+ * Passes a tensor through the ReLU function
+ * @param t - the tensor to pass through ReLU
+ * @return a tensor of same dimensions, with each entry either 0 (if the corresponding entry in t is less than
+ * or equal to 0) or 1 (if the corresponding entry in t is greater than 0)
+ */
+struct Tensor *tensor_ReLU(struct Tensor *t);
+
+/**
+ * Passes a tensor through the sigmoid function
+ * @param t - the tensor to pass through sigmoid
+ * @return a tensor of same dimensions, with each entry equaling
+ * to the sigmoid function of the corresponding entry in t
+ */
+struct Tensor *tensor_sigmoid(struct Tensor *t);
+
+/**
+ * Passes a vector through the softmax function, returns a particular element
+ * @param t - an (n, 1) or (1, n) vector
+ * @return a softmax tensor
+ */
+struct Tensor *tensor_softmax(struct Tensor *t);
+
+/**
+ * Selects a scalar component of a vector
+ * @note Designed for softmax in particular
+ * @param t the array of tensors
+ * @param index the index of the component to select
+ * @return tensors[index]
+ */
+struct Tensor *tensor_selector(struct Tensor *t, int index);
 
 /**
  * Checks if two tensors equal each other

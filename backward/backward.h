@@ -42,6 +42,24 @@ void backward_sigmoid(struct Tensor *self);
 void backward_ReLU(struct Tensor *self);
 
 /**
+ * Computes gradients for parent through Softmax
+ * @param self – the current tensor generated as a Softmax from the parent, with only one element selected
+ */
+void backward_softmax(struct Tensor *self);
+
+/**
+ * Computes gradients for parent through natural logarithm
+ * @param self – the current tensor generated as a log from the parent
+ */
+void backward_log(struct Tensor *self);
+
+/**
+ * Computes gradients for parent through exponent
+ * @param self – the current tensor generated as a log from the parent
+ */
+void backward_exp(struct Tensor *self);
+
+/**
  * Computes gradients for parent through transpose
  * @param self – the current tensor generated as a ReLU from the parent
  */
