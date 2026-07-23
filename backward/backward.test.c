@@ -380,32 +380,40 @@ void test_scalar_backward_ReLU2()
 
 void test_backward_softmax()
 {
-    int shape[2] = {1, 1};
-    struct Tensor *t[5] = {
-        create_tensor(shape, 2, NULL, 0, MATMUL),
-        create_tensor(shape, 2, NULL, 0, MATMUL),
-        create_tensor(shape, 2, NULL, 0, MATMUL),
-        create_tensor(shape, 2, NULL, 0, MATMUL),
-        create_tensor(shape, 2, NULL, 0, MATMUL)
-    };
-    t[0]->data[0] = 1;
-    t[1]->data[0] = -1;
-    t[2]->data[0] = 0;
-    t[3]->data[0] = 2;
-    t[4]->data[0] = -2;
+    int shape[2] = {3, 1};
+    struct Tensor *v = create_tensor(shape, 2, NULL, 0, UNDEF);
+    v->data[0] = 1, v->data[1] = 2, v->data[2] = -2;
+    struct Tensor *s = tensor_softmax(v);
+    s->backward = backward_softmax;
 
-    struct Tensor *grad_expected[5] = {
-        create_tensor(shape, 2, NULL, 0, MATMUL),
-        create_tensor(shape, 2, NULL, 0, MATMUL),
-        create_tensor(shape, 2, NULL, 0, MATMUL),
-        create_tensor(shape, 2, NULL, 0, MATMUL),
-        create_tensor(shape, 2, NULL, 0, MATMUL)
-    };
-    grad_expected[0]->data[0] = 0.234122;
-    grad_expected[1]->data[0] = 0.031685;
-    grad_expected[2]->data[0] = 0.086129;
-    grad_expected[3]->data[0] = 0.636409;
-    grad_expected[4]->data[0] = 0.011656;
+    struct Tensor *label_prob = tensor_selector(s, 0);
+    label_prob->backward = backward_matmul;
+
+    init_grad(label_prob);
+    label_prob->grad->data[0] = 1;
+    label_prob->backward(label_prob);
+    s->backward(s);
+
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, UNDEF);
+    expected->data[0] = 0.1949571818;
+    expected->data[1] = -0.1914506406;
+    expected->data[2] = -0.0035065408;
+
+    if (check_equal(expected, v->grad))
+    {
+        printf("SUCCESS: backward softmax updates grads expected.\n");
+        successes++;
+    }
+    else
+    {
+        printf("FAILURE: backward softmax grad updates failed.\n");
+        failures++;
+    }
+
+    tensor_destruct(v);
+    tensor_destruct(s);
+    tensor_destruct(label_prob);
+    tensor_destruct(expected);
 }
 
 int main() {
@@ -422,6 +430,8 @@ int main() {
 
     test_scalar_backward_ReLU1();
     test_scalar_backward_ReLU2();
+
+    test_backward_softmax();
 
     printf("\nTotal tests: %d\n", successes + failures);
     printf("Total successes: %d\n", successes);

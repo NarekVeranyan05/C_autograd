@@ -281,7 +281,7 @@ struct Tensor *tensor_selector(struct Tensor *t, int index)
         init_empty(indicator);
         indicator->data[index] = 1;
 
-        selected = tensor_mul(indicator, t);
+        selected = tensor_matmul(indicator, t);
     }
     else // 1 x n
     {
@@ -291,7 +291,7 @@ struct Tensor *tensor_selector(struct Tensor *t, int index)
         init_empty(indicator);
         indicator->data[index] = 1;
 
-        selected = tensor_mul(t, indicator);
+        selected = tensor_matmul(t, indicator);
     }
 
     return selected;

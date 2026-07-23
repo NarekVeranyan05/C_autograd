@@ -127,7 +127,7 @@ void backward_softmax(struct Tensor *self)
             if (i == j)
                 softmax_logit_grad->data[i * size + j] = self->data[i] * (1 - self->data[i]);
             else
-                softmax_logit_grad->data[i * size + j] = self->data[i] * (1 - self->data[j]);
+                softmax_logit_grad->data[i * size + j] = -self->data[i] * self->data[j];
         }
     }
 
