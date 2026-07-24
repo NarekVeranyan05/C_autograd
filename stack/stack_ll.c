@@ -42,3 +42,14 @@ void pop(const struct Stack *stack)
 {
     remove_at(stack->ll, 0);
 }
+
+bool search(const struct Stack *stack, void *data)
+{
+   return contains(stack->ll, data);
+}
+
+
+bool isEmpty(const struct Stack *stack)
+{
+    return (size(stack->ll) == 0);
+}

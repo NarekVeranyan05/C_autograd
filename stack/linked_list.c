@@ -7,6 +7,17 @@
 #include <assert.h>
 #include <stdlib.h>
 
+struct Node {
+    void *data;
+    void (*destruct_data)(void *data);
+    struct Node *next;
+};
+
+struct Linked_list {
+    struct Node *head;
+    int size;
+};
+
 struct Linked_list *create_linked_list()
 {
     struct Linked_list *ll = malloc(sizeof(struct Linked_list));
@@ -42,6 +53,21 @@ void *get_at(const struct Linked_list *ll, const int index)
     }
 
     return result;
+}
+
+bool contains(const struct Linked_list *ll, void *data)
+{
+    bool contains = false;
+
+    const struct Node *curr_node = ll->head;
+
+    while (curr_node != NULL && !contains)
+    {
+        contains = (curr_node->data == data);
+        curr_node = curr_node->next;
+    }
+
+    return contains;
 }
 
 void add(struct Linked_list *ll, void *data, void (*destruct_data)(void *data))
@@ -167,4 +193,9 @@ void remove_at(struct Linked_list *ll, int index)
 
         ll->size--;
     }
+}
+
+int size(const struct Linked_list *ll)
+{
+    return ll->size;
 }
