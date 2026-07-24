@@ -55,7 +55,7 @@ struct Tensor *create_tensor(int *shape, int ndims, struct Tensor **parents, int
             t->backward = backward_transpose;
             break;
         case INVERSE:
-            // t->backward = backward_inverse;
+            // t->backward = backward_inverse; FIXME
             break;
         case SCALE:
             t->backward = backward_scale;

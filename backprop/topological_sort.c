@@ -30,7 +30,7 @@ struct Linked_list *topological_sort(struct Tensor *loss)
 
         // if current node is not visited, mark it as visited
         if (!contains(sorted, curr_node))
-            add(sorted, curr_node, tensor_destruct_void);
+            add(sorted, curr_node, NULL);
 
         bool found_new = false; // not visited or not pushed
         for (int i = 0; i < curr_node->num_parents && !found_new; i++)

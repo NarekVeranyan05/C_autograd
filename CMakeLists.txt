@@ -29,6 +29,7 @@ add_executable(backward_test
         backprop/backprop.c
         backprop/topological_sort.c
         backprop/topological_sort.h
+        backprop/backprop.h
 )
 
 # 2. Executable for Stack tests
@@ -53,5 +54,5 @@ add_executable(topological_sort_test
         backprop/backprop.c
         backprop/topological_sort.c
         backprop/topological_sort.h
-        backprop/topological_sort.test.c
+        backprop/backprop.test.c
 )

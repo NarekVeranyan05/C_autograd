@@ -8,6 +8,7 @@
 #include "tensor.h"
 #include "topological_sort.h"
 #include "linked_list.h"
+#include "backprop.h"
 
 volatile int successes = 0;
 volatile int failures = 0;
@@ -85,10 +86,70 @@ void test_topological_sort_deep()
     destruct_linked_list(sorted);
 }
 
+void test_scalar_backprop_deep()
+{
+    int shape[2] = {1, 1};
+    struct Tensor *w1= create_tensor(shape, 2, NULL, 0, UNDEF);
+    struct Tensor *w2= create_tensor(shape, 2, NULL, 0, UNDEF);
+    w1->data[0] = 2;
+    w2->data[0] = 3;
+
+    struct Tensor *v1= tensor_log(w1);
+
+    struct Tensor *v2 = tensor_mul(w2, v1);
+
+    struct Tensor *v3 = tensor_scale(3, v2);
+
+    struct Tensor *loss = tensor_add(v3, v2);
+    backprop(loss);
+
+    struct Tensor *grad_v3_expected = create_tensor(shape, 2, NULL, 0, UNDEF);
+    grad_v3_expected->data[0] = 1;
+
+    struct Tensor *grad_v2_expected = create_tensor(shape, 2, NULL, 0, UNDEF);
+    grad_v2_expected->data[0] = 4;
+
+    struct Tensor *grad_v1_expected = create_tensor(shape, 2, NULL, 0, UNDEF);
+    grad_v1_expected->data[0] = 4 * w2->data[0];
+
+    struct Tensor *grad_w1_expected = create_tensor(shape, 2, NULL, 0, UNDEF);
+    grad_w1_expected->data[0] = 5.99970;
+
+    struct Tensor *grad_w2_expected = create_tensor(shape, 2, NULL, 0, UNDEF);
+    grad_w2_expected->data[0] = 2.772588;
+
+    int count = 0;
+    count += check_equal(grad_v3_expected, v3->grad);
+    count += check_equal(grad_v2_expected, v2->grad);
+    count += check_equal(grad_v1_expected, v1->grad);
+    count += check_equal(grad_w1_expected, w1->grad);
+    count += check_equal(grad_w2_expected, w2->grad);
+
+    if (count == 5)
+    {
+        printf("SUCCESS: backprop evaluates gradients as expected.\n");
+        successes++;
+    }
+    else
+    {
+        printf("FAILURE: backprop failed.\n");
+        failures++;
+    }
+
+    tensor_destruct(grad_v3_expected);
+    tensor_destruct(grad_v2_expected);
+    tensor_destruct(grad_v1_expected);
+    tensor_destruct(grad_w1_expected);
+    tensor_destruct(grad_w2_expected);
+}
+
+
 int main()
 {
-    // test_topological_sort_singleton();
+    test_topological_sort_singleton();
     test_topological_sort_deep();
+
+    test_scalar_backprop_deep();
 
     printf("\nTotal tests: %d\n", successes + failures);
     printf("Total successes: %d\n", successes);
