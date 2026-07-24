@@ -24,6 +24,24 @@ void backward_sum(struct Tensor *self);
 void backward_matmul(struct Tensor *self);
 
 /**
+ * Computes gradients for parent-multiplicands (Hadamard product)
+ * @param self – the current tensor generated as a product
+ */
+void backward_mul(struct Tensor *self);
+
+/**
+ * Computes gradients for parent through inverse
+ * @param self – the current tensor generated as the inverse of the parent
+ */
+void backward_inverse(struct Tensor *self);
+
+/**
+ * Computes gradients for scaled parent
+ * @param self – the current tensor generated as the scaled version of the parent
+ */
+void backward_scale(struct Tensor *self);
+
+/**
  * Computes gradients for parent through tanh
  * @param self – the current tensor generated as a hyperbolic tangent from the parent
  */

@@ -49,16 +49,16 @@ struct Tensor *create_tensor(int *shape, int ndims, struct Tensor **parents, int
             t->backward = backward_matmul;
             break;
         case MUL:
-            // t->backward = backward_mul; FIXME
+            t->backward = backward_mul;
             break;
         case TRANSPOSE:
             t->backward = backward_transpose;
             break;
         case INVERSE:
-            // t->backward = backward_inverse; FIXME
+            // t->backward = backward_inverse;
             break;
-        case NEGATION:
-            // t->backward = backward_negate; FIXME
+        case SCALE:
+            t->backward = backward_scale;
             break;
         case SIGMOID:
             t->backward = backward_sigmoid;
@@ -211,21 +211,23 @@ struct Tensor *tensor_invert(struct Tensor *t)
     return inverse;
 }
 
-struct Tensor *tensor_negate(struct Tensor *t)
+struct Tensor *tensor_scale(const double scale, struct Tensor *t)
 {
-    const double epsilon = 0.0001;
+    int shape[2] = {1, 1};
+    struct Tensor *scale_tensor = create_tensor(shape, 2, NULL, 0, UNDEF);
+    scale_tensor->data[0] = scale;
 
-    struct Tensor *parents[1] = {t};
-    struct Tensor *negation = create_tensor(t->shape, t->ndims, parents, 1, NEGATION);
+    struct Tensor *parents[2] = {scale_tensor, t};
+    struct Tensor *scaled = create_tensor(t->shape, t->ndims, parents, 2, SCALE);
 
     int size = 1;
     for (int i = 0; i < t->ndims; i++)
         size *= t->shape[i];
 
     for (int i = 0; i < size; i++)
-        negation->data[i] = -(t->data[i]);
+        scaled->data[i] = scale * t->data[i];
 
-    return negation;
+    return scaled;
 }
 
 struct Tensor *tensor_log(struct Tensor *t)

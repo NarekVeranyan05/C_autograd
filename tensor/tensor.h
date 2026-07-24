@@ -14,7 +14,7 @@ enum Operation {
     MUL,
     TRANSPOSE,
     INVERSE,
-    NEGATION,
+    SCALE,
     SIGMOID,
     SOFTMAX,
     RELU,
@@ -107,10 +107,11 @@ struct Tensor *tensor_invert(struct Tensor *t);
 
 /**
  * Takes the negation of a tensor.
+ * @param scale - the number to scale by
  * @param t - the tensor to negate
  * @return a tensor with negated elements of t
  */
-struct Tensor *tensor_negate(struct Tensor *t);
+struct Tensor *tensor_scale(double scale, struct Tensor *t);
 
 /**
  * Passes a tensor through the natural logarithm function

@@ -61,6 +61,58 @@ void backward_matmul(struct Tensor *self)
     self->parents[1]->grad = sum2;
 }
 
+void backward_mul(struct Tensor *self)
+{
+    // contributing gradient to parent 1
+    if (self->parents[0]->grad == NULL)
+        init_grad(self->parents[0]);
+
+    struct Tensor *grad1 = tensor_mul(self->grad, self->parents[1]);
+    struct Tensor *sum1 = tensor_add(grad1, self->parents[0]->grad);
+    tensor_destruct(self->parents[0]->grad);
+    self->parents[0]->grad = sum1;
+
+    // contributing gradient to parent 2
+    if (self->parents[1]->grad == NULL)
+        init_grad(self->parents[1]);
+
+    struct Tensor *grad2 = tensor_mul(self->grad, self->parents[0]);
+    struct Tensor *sum2 = tensor_add(grad2, self->parents[1]->grad);
+    tensor_destruct(self->parents[1]->grad);
+    self->parents[1]->grad = sum2;
+}
+
+void backward_scale(struct Tensor *self)
+{
+    // contributing gradient to the scaling factor (parent 1)
+    if (self->parents[0]->grad == NULL)
+        init_grad(self->parents[0]);
+
+    struct Tensor *mul = tensor_mul(self->grad, self->parents[1]);
+    int shape[2] = {1, 1};
+    struct Tensor *grad1 = create_tensor(shape, 2, NULL, 0, UNDEF);
+    init_empty(grad1);
+
+    int size = 1;
+    for (int i = 0; i < self->parents[1]->ndims; i++)
+        size *= self->parents[1]->shape[i];
+    for (int i = 0; i < size; i++)
+        grad1->data[0] += mul->data[i];
+
+    struct Tensor *sum1 = tensor_add(grad1, self->parents[0]->grad);
+    tensor_destruct(self->parents[0]->grad);
+    self->parents[0]->grad = sum1;
+
+    // contributing gradient to the scaled tensor (parent 2)
+    if (self->parents[1]->grad == NULL)
+        init_grad(self->parents[1]);
+
+    struct Tensor *grad2 = tensor_scale(self->parents[0]->data[0], self->grad);
+    struct Tensor *sum2 = tensor_add(grad2, self->parents[1]->grad);
+    tensor_destruct(self->parents[1]->grad);
+    self->parents[1]->grad = sum2;
+}
+
 void backward_sigmoid(struct Tensor *self)
 {
     if (self->parents[0]->grad == NULL)
@@ -77,7 +129,7 @@ void backward_sigmoid(struct Tensor *self)
         ones->data[i] = 1;
 
     // exponential^(-margin)
-    struct Tensor *exp = tensor_exp(tensor_negate(self->parents[0]));
+    struct Tensor *exp = tensor_exp(tensor_scale(-1, self->parents[0]));
     struct Tensor *denom = tensor_add(ones, exp);
 
     struct Tensor *grad = tensor_mul(
@@ -119,7 +171,7 @@ void backward_softmax(struct Tensor *self)
 
     int shape[2] = {size, size};
     struct Tensor *parents[2] = {self->parents[0], self};
-    struct Tensor *softmax_logit_grad = create_tensor(shape, 2, parents, 2, GRAD);
+    struct Tensor *softmax_logit_grad = create_tensor(shape, 2, parents, 2, UNDEF);
     for (int i = 0; i < size; i++)
     {
         for (int j = 0; j < size; j++)
