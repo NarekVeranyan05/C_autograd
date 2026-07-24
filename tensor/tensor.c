@@ -8,6 +8,7 @@
 #include "./tensor.h"
 #include <math.h>
 #include <stdio.h>
+#include <backward.h>
 
 struct Tensor *create_tensor(int *shape, int ndims, struct Tensor **parents, int num_parents, enum Operation op)
 {
@@ -36,6 +37,49 @@ struct Tensor *create_tensor(int *shape, int ndims, struct Tensor **parents, int
     }
     t->num_parents = num_parents;
 
+    switch (op)
+    {
+        case UNDEF:
+            t->backward = NULL;
+            break;
+        case SUM:
+            t->backward = backward_sum;
+            break;
+        case MATMUL:
+            t->backward = backward_matmul;
+            break;
+        case MUL:
+            // t->backward = backward_mul; FIXME
+            break;
+        case TRANSPOSE:
+            t->backward = backward_transpose;
+            break;
+        case INVERSE:
+            // t->backward = backward_inverse; FIXME
+            break;
+        case NEGATION:
+            // t->backward = backward_negate; FIXME
+            break;
+        case SIGMOID:
+            t->backward = backward_sigmoid;
+            break;
+        case SOFTMAX:
+            t->backward = backward_softmax;
+            break;
+        case RELU:
+            t->backward = backward_ReLU;
+            break;
+        case EXP:
+            t->backward = backward_exp;
+            break;
+        case LOG:
+            t->backward = backward_log;
+            break;
+        case POW2:
+            // t->backward = backward_pow2; FIXME
+            break;
+    }
+
     t->op = op;
 
     t->grad = NULL;
@@ -44,7 +88,7 @@ struct Tensor *create_tensor(int *shape, int ndims, struct Tensor **parents, int
     return t;
 }
 
-void init_empty(struct Tensor *t)
+void init_empty(const struct Tensor *t)
 {
     int size = 1;
     for (int i = 0; i < t->ndims; i++)
@@ -58,7 +102,7 @@ void init_empty(struct Tensor *t)
 
 void init_grad(struct Tensor *t)
 {
-    t->grad = create_tensor(t->shape, t->ndims, &t, 1, GRAD);
+    t->grad = create_tensor(t->shape, t->ndims, &t, 1, UNDEF);
     init_empty(t->grad);
 }
 
@@ -69,13 +113,13 @@ struct Tensor *tensor_matmul(struct Tensor *a, struct Tensor *b)
 
     struct Tensor *parents[2] = {a, b};
 
-    struct Tensor *prod = create_tensor(shape, a->ndims, parents, 2, SUM);
+    struct Tensor *prod = create_tensor(shape, a->ndims, parents, 2, MATMUL);
     for (int i = 0; i < a->shape[0]; i++) // i-th row of the product
     {
         for (int j = 0; j < b->shape[1]; j++) // j-th column of the product
         {
             // prod(i, j) equals to the dot product of the i-th row and j-th column of the tensors a and b
-            float sum = 0;
+            double sum = 0;
             for (int h = 0; h < a->shape[1]; h++)
             {
                 sum += a->data[i * a->shape[1] + h] * b->data[h * b->shape[1] + j];
@@ -187,7 +231,7 @@ struct Tensor *tensor_negate(struct Tensor *t)
 struct Tensor *tensor_log(struct Tensor *t)
 {
     struct Tensor *parents[1] = {t};
-    struct Tensor *logged = create_tensor(t->shape, t->ndims, parents, 1, INVERSE);
+    struct Tensor *logged = create_tensor(t->shape, t->ndims, parents, 1, LOG);
 
     int size = 1;
     for (int i = 0; i < t->ndims; i++)
@@ -202,7 +246,7 @@ struct Tensor *tensor_log(struct Tensor *t)
 struct Tensor *tensor_exp(struct Tensor *t)
 {
     struct Tensor *parents[1] = {t};
-    struct Tensor *exponential = create_tensor(t->shape, t->ndims, parents, 1, INVERSE);
+    struct Tensor *exponential = create_tensor(t->shape, t->ndims, parents, 1, EXP);
 
     int size = 1;
     for (int i = 0; i < t->ndims; i++)

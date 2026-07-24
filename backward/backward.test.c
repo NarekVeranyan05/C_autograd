@@ -13,8 +13,8 @@
 
 #include "backward.h"
 
-volatile int successes;
-volatile int failures;
+volatile int successes = 0;
+volatile int failures = 0;
 
 void test_scalar_backward_sum()
 {

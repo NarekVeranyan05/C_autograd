@@ -11,8 +11,8 @@
 #include <string.h>
 #include <math.h>
 
-volatile int successes;
-volatile int failures;
+volatile int successes = 0;
+volatile int failures = 0;
 
 void test_scalar_tensor_add()
 {

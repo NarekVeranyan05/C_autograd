@@ -21,7 +21,6 @@ enum Operation {
     EXP,
     LOG,
     POW2,
-    GRAD
 };
 
 struct Tensor {
@@ -54,7 +53,7 @@ struct Tensor *create_tensor(int *shape, int ndims, struct Tensor *parents[2], i
  * Sets all entries of a tensor to zero.
  * @param t - the tensor to set to empty
  */
-void init_empty(struct Tensor *t);
+void init_empty(const struct Tensor *t);
 
 /**
  * Initialises empty gradient for the tensor.
