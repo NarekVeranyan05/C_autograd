@@ -8,19 +8,19 @@
 #include <stdbool.h>
 
 enum Operation {
-    UNDEF,
-    SUM,
-    MATMUL,
-    MUL,
-    TRANSPOSE,
-    INVERSE,
-    SCALE,
-    SIGMOID,
-    SOFTMAX,
-    RELU,
-    EXP,
-    LOG,
-    POW2,
+    OP_UNDEF,
+    OP_SUM,
+    OP_MATMUL,
+    OP_MUL,
+    OP_TRANSPOSE,
+    OP_INVERSE,
+    OP_SCALE,
+    OP_SIGMOID,
+    OP_SOFTMAX,
+    OP_RELU,
+    OP_EXP,
+    OP_LOG,
+    OP_POW2,
 };
 
 struct Tensor {
@@ -173,7 +173,8 @@ bool check_equal(struct Tensor *a, struct Tensor *b);
 /**
  * Destructs a tensor
  * @param t - the tensor to destruct
+ * @param delete_data - if true, the data of the tensor t is deleted, and is saved otherwise
  */
-void tensor_destruct(struct Tensor *t);
+void tensor_destruct(struct Tensor *t, bool delete_data);
 
 #endif //UNTITLED_TENSOR_H

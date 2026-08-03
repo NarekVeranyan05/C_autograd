@@ -10,11 +10,6 @@
 #include "stack.h"
 #include "tensor.h"
 
-static void tensor_destruct_void(void *tensor)
-{
-    tensor_destruct(tensor);
-}
-
 struct Linked_list *topological_sort(struct Tensor *loss)
 {
 

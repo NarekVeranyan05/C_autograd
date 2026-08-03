@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "linked_list.h"
+#include "linked_list.c"
 
 volatile int successes = 0;
 volatile int failures = 0;

@@ -17,9 +17,9 @@ volatile int failures = 0;
 void test_scalar_tensor_add()
 {
     int shape[2] = {1, 1};
-    struct Tensor *t1 = create_tensor(shape, 2, NULL, 0, MATMUL);
-    struct Tensor *t2 = create_tensor(shape, 2, NULL, 0, MATMUL);
-    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *t1 = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *t2 = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
 
     t1->data[0] = 3;
     t2->data[0] = 4.5;
@@ -37,17 +37,17 @@ void test_scalar_tensor_add()
         failures++;
     }
 
-    tensor_destruct(t1);
-    tensor_destruct(t2);
-    tensor_destruct(expected);
-    tensor_destruct(res);
+    tensor_destruct(t1, true);
+    tensor_destruct(t2, true);
+    tensor_destruct(expected, true);
+    tensor_destruct(res, true);
 }
 
 void test_multidims_tensor_add()
 {
     int shape1[3] = {3, 3, 2}, shape2[3] = {3, 3, 2};
-    struct Tensor *t1 = create_tensor(shape1, 3, NULL, 0, MATMUL);
-    struct Tensor *t2 = create_tensor(shape2, 3, NULL, 0, MATMUL);
+    struct Tensor *t1 = create_tensor(shape1, 3, NULL, 0, OP_MATMUL);
+    struct Tensor *t2 = create_tensor(shape2, 3, NULL, 0, OP_MATMUL);
 
     const double d1[18] = {
         1, -1, 4,
@@ -71,7 +71,7 @@ void test_multidims_tensor_add()
     memcpy(t2->data, d2, 9 * sizeof(double));
 
     int shape[3] = {3, 3, 2};
-    struct Tensor *expected = create_tensor(shape, 3, NULL, 0, MATMUL);
+    struct Tensor *expected = create_tensor(shape, 3, NULL, 0, OP_MATMUL);
     double const exp[18] = {
         4, 0, 6,
         2, 4, 2,
@@ -95,18 +95,18 @@ void test_multidims_tensor_add()
         failures++;
     }
 
-    tensor_destruct(t1);
-    tensor_destruct(t2);
-    tensor_destruct(expected);
-    tensor_destruct(res);
+    tensor_destruct(t1, true);
+    tensor_destruct(t2, true);
+    tensor_destruct(expected, true);
+    tensor_destruct(res, true);
 }
 
 void test_scalar_matmul()
 {
     int shape[2] = {1, 1};
-    struct Tensor *t1 = create_tensor(shape, 2, NULL, 0, MATMUL);
-    struct Tensor *t2 = create_tensor(shape, 2, NULL, 0, MATMUL);
-    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *t1 = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *t2 = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
 
     t1->data[0] = 3;
     t2->data[0] = 4.5;
@@ -124,23 +124,23 @@ void test_scalar_matmul()
         failures++;
     }
 
-    tensor_destruct(t1);
-    tensor_destruct(t2);
-    tensor_destruct(expected);
-    tensor_destruct(res);
+    tensor_destruct(t1, true);
+    tensor_destruct(t2, true);
+    tensor_destruct(expected, true);
+    tensor_destruct(res, true);
 }
 
 void test_vec_matmul()
 {
     int shape1[2] = {1, 3}, shape2[2] = {3, 1};
-    struct Tensor *t1 = create_tensor(shape1, 2, NULL, 0, MATMUL);
-    struct Tensor *t2 = create_tensor(shape2, 2, NULL, 0, MATMUL);
+    struct Tensor *t1 = create_tensor(shape1, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *t2 = create_tensor(shape2, 2, NULL, 0, OP_MATMUL);
 
     t1->data[0] = 3, t1->data[1] = 4, t1->data[2] = 5;
     t2->data[0] = 5, t2->data[1] = -4, t2->data[2] = 0;
 
     int shape[2] = {1, 1};
-    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
     expected->data[0] = -1;
 
     struct Tensor *res = tensor_matmul(t1, t2);
@@ -155,17 +155,17 @@ void test_vec_matmul()
         failures++;
     }
 
-    tensor_destruct(t1);
-    tensor_destruct(t2);
-    tensor_destruct(expected);
-    tensor_destruct(res);
+    tensor_destruct(t1, true);
+    tensor_destruct(t2, true);
+    tensor_destruct(expected, true);
+    tensor_destruct(res, true);
 }
 
 void test_square_matmul()
 {
     int shape1[2] = {3, 3}, shape2[2] = {3, 3};
-    struct Tensor *t1 = create_tensor(shape1, 2, NULL, 0, MATMUL);
-    struct Tensor *t2 = create_tensor(shape2, 2, NULL, 0, MATMUL);
+    struct Tensor *t1 = create_tensor(shape1, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *t2 = create_tensor(shape2, 2, NULL, 0, OP_MATMUL);
 
     const double d1[9] = {1, -1, 4, 0, 3, 2, 2, 1, 0};
     memcpy(t1->data, d1, 9 * sizeof(double));
@@ -173,7 +173,7 @@ void test_square_matmul()
     memcpy(t2->data, d2, 9 * sizeof(double));
 
     int shape[2] = {3, 3};
-    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
     double const exp[9] = {5, 16, 22, 8, 11, 10, 8, 3, 4};
     memcpy(expected->data, exp, 9 * sizeof(double));
 
@@ -189,17 +189,17 @@ void test_square_matmul()
         failures++;
     }
 
-    tensor_destruct(t1);
-    tensor_destruct(t2);
-    tensor_destruct(expected);
-    tensor_destruct(res);
+    tensor_destruct(t1, true);
+    tensor_destruct(t2, true);
+    tensor_destruct(expected, true);
+    tensor_destruct(res, true);
 }
 
 void test_non_square_matmul()
 {
     int shape1[2] = {3, 4}, shape2[2] = {4, 5};
-    struct Tensor *t1 = create_tensor(shape1, 2, NULL, 0, MATMUL);
-    struct Tensor *t2 = create_tensor(shape2, 2, NULL, 0, MATMUL);
+    struct Tensor *t1 = create_tensor(shape1, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *t2 = create_tensor(shape2, 2, NULL, 0, OP_MATMUL);
 
     const double d1[12] = {0, 0, 7, 2, 4, 1, 8, 1, 9, 1, 4, 0};
     memcpy(t1->data, d1, 12 * sizeof(double));
@@ -207,7 +207,7 @@ void test_non_square_matmul()
     memcpy(t2->data, d2, 20 * sizeof(double));
 
     int shape[2] = {3, 5};
-    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
     const double exp[15] = {-21, -10, 31, 14, -6, -28, 81, 76, 66, -1, -10, 218, 120, 113, -31};
     memcpy(expected->data, exp, 15 * sizeof(double));
 
@@ -223,18 +223,18 @@ void test_non_square_matmul()
         failures++;
     }
 
-    tensor_destruct(t1);
-    tensor_destruct(t2);
-    tensor_destruct(expected);
-    tensor_destruct(res);
+    tensor_destruct(t1, true);
+    tensor_destruct(t2, true);
+    tensor_destruct(expected, true);
+    tensor_destruct(res, true);
 }
 
 void test_tensor_scalar_mul()
 {
     int shape[2] = {1, 1};
-    struct Tensor *t1 = create_tensor(shape, 2, NULL, 0, MATMUL);
-    struct Tensor *t2 = create_tensor(shape, 2, NULL, 0, MATMUL);
-    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *t1 = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *t2 = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
 
     t1->data[0] = 3;
     t1->data[1] = 4.5;
@@ -251,22 +251,22 @@ void test_tensor_scalar_mul()
         failures++;
     }
 
-    tensor_destruct(t1);
-    tensor_destruct(t2);
-    tensor_destruct(expected);
-    tensor_destruct(res);
+    tensor_destruct(t1, true);
+    tensor_destruct(t2, true);
+    tensor_destruct(expected, true);
+    tensor_destruct(res, true);
 }
 
 void test_vec_mul()
 {
     int shape[2] = {1, 3};
-    struct Tensor *t1 = create_tensor(shape, 2, NULL, 0, MATMUL);
-    struct Tensor *t2 = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *t1 = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *t2 = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
 
     t1->data[0] = 3, t1->data[1] = 4, t1->data[2] = 5;
     t2->data[0] = 5, t2->data[1] = -4, t2->data[2] = 0;
 
-    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
     expected->data[0] = 15, expected->data[1] = -16, expected->data[2] = 0;
 
     struct Tensor *res = tensor_mul(t1, t2);
@@ -281,16 +281,16 @@ void test_vec_mul()
         failures++;
     }
 
-    tensor_destruct(t1);
-    tensor_destruct(t2);
-    tensor_destruct(expected);
-    tensor_destruct(res);
+    tensor_destruct(t1, true);
+    tensor_destruct(t2, true);
+    tensor_destruct(expected, true);
+    tensor_destruct(res, true);
 }
 
 void test_matrix_mul() {
     int shape1[2] = {3, 5}, shape2[2] = {3, 5};
-    struct Tensor *t1 = create_tensor(shape1, 2, NULL, 0, MATMUL);
-    struct Tensor *t2 = create_tensor(shape2, 2, NULL, 0, MATMUL);
+    struct Tensor *t1 = create_tensor(shape1, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *t2 = create_tensor(shape2, 2, NULL, 0, OP_MATMUL);
 
     const double d1[15] = {1, -1, 4, 0, 3, 2, 2, 1, 0, 7, 1, -52, 11, 5, 8};
     memcpy(t1->data, d1,15  * sizeof(double));
@@ -298,7 +298,7 @@ void test_matrix_mul() {
     memcpy(t2->data, d2, 15 * sizeof(double));
 
     int shape[2] = {3, 5};
-    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
     double const exp[15] = {3, -1, 8, 0, 3, 0, 2, 4, 0, 42, 21, 572, 0, -75, 8};
     memcpy(expected->data, exp, 15 * sizeof(double));
 
@@ -314,17 +314,17 @@ void test_matrix_mul() {
         failures++;
     }
 
-    tensor_destruct(t1);
-    tensor_destruct(t2);
-    tensor_destruct(expected);
-    tensor_destruct(res);
+    tensor_destruct(t1, true);
+    tensor_destruct(t2, true);
+    tensor_destruct(expected, true);
+    tensor_destruct(res, true);
 }
 
 void test_scalar_transpose()
 {
     int shape[2] = {1, 1};
-    struct Tensor *t = create_tensor(shape, 2, NULL, 0, MATMUL);
-    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *t = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
     t->data[0] = 4;
     expected->data[0] = 4;
 
@@ -352,8 +352,8 @@ void test_vector_transpose()
 {
     int shape1[2] = {1, 4};
     int shape2[2] = {4, 1};
-    struct Tensor *t = create_tensor(shape1, 2, NULL, 0, MATMUL);
-    struct Tensor *expected = create_tensor(shape2, 2, NULL, 0, MATMUL);
+    struct Tensor *t = create_tensor(shape1, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *expected = create_tensor(shape2, 2, NULL, 0, OP_MATMUL);
     t->data[0] = expected->data[0] = 1, t->data[1] = expected->data[1] = 2, t->data[2] = expected->data[2] = 3, t->data[3] = expected->data[3] = 4;
 
     struct Tensor *res = tensor_transpose(t);
@@ -368,17 +368,17 @@ void test_vector_transpose()
         failures++;
     }
 
-    tensor_destruct(t);
-    tensor_destruct(res);
-    tensor_destruct(expected);
+    tensor_destruct(t, true);
+    tensor_destruct(res, true);
+    tensor_destruct(expected, true);
 }
 
 void test_matrix_transpose()
 {
     int shape1[2] = {3, 5};
     int shape2[2] = {5, 3};
-    struct Tensor *t = create_tensor(shape1, 2, NULL, 0, MATMUL);
-    struct Tensor *expected = create_tensor(shape2, 2, NULL, 0, MATMUL);
+    struct Tensor *t = create_tensor(shape1, 2, NULL, 0, OP_MATMUL);
+    struct Tensor *expected = create_tensor(shape2, 2, NULL, 0, OP_MATMUL);
 
     const double d[15] = {
         1, 2, 3, 4, 5,
@@ -409,8 +409,8 @@ void test_matrix_transpose()
         failures++;
     }
 
-    tensor_destruct(t);
-    tensor_destruct(expected);
+    tensor_destruct(t, true);
+    tensor_destruct(expected, true);
 }
 
 extern const double epsilon;
@@ -418,7 +418,7 @@ extern const double epsilon;
 void test_tensor_invert()
 {
     int shape[2] = {3, 5};
-    struct Tensor *t = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *t = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
 
     const double d[15] = {
         1, -5, 0, 11, -20,
@@ -427,7 +427,7 @@ void test_tensor_invert()
     };
     memcpy(t->data, d, 15 * sizeof(double));
 
-    struct Tensor *t_inverted_exp = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *t_inverted_exp = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
     const double exp[15] = {
         (1 / (epsilon + 1)), (1/ (epsilon - 5)), (1/epsilon), (1 / (epsilon + 11)), (1 / (epsilon - 20)),
         (1 / (epsilon + 6)), (1 / (epsilon + 7)), (1 / (epsilon - 30)), (1 / (epsilon - 12)), (1 / (epsilon + 10)),
@@ -448,15 +448,15 @@ void test_tensor_invert()
         failures++;
     }
 
-    tensor_destruct(t);
-    tensor_destruct(t_inverted_exp);
-    tensor_destruct(t_inverted);
+    tensor_destruct(t, true);
+    tensor_destruct(t_inverted_exp, true);
+    tensor_destruct(t_inverted, true);
 }
 
 void test_tensor_ReLU()
 {
     int shape[2] = {3, 5};
-    struct Tensor *t = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *t = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
 
     const double d[15] = {
         1, -5, 0, 11, -20,
@@ -465,7 +465,7 @@ void test_tensor_ReLU()
     };
     memcpy(t->data, d, 15 * sizeof(double));
 
-    struct Tensor *t_activated_exp = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *t_activated_exp = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
     const double exp[15] = {
         1, 0, 0, 11, 0,
         6, 7, 0, 0, 10,
@@ -486,22 +486,22 @@ void test_tensor_ReLU()
         failures++;
     }
 
-    tensor_destruct(t);
-    tensor_destruct(t_activated_exp);
-    tensor_destruct(t_activated);
+    tensor_destruct(t, true);
+    tensor_destruct(t_activated_exp, true);
+    tensor_destruct(t_activated, true);
 }
 
 void test_vector_softmax()
 {
     int shape[2] = {5, 1};
-    struct Tensor *t = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *t = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
     t->data[0] = 1;
     t->data[1] = -1;
     t->data[2] = 0;
     t->data[3] = 2;
     t->data[4] = -2;
 
-    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, MATMUL);
+    struct Tensor *expected = create_tensor(shape, 2, NULL, 0, OP_MATMUL);
     expected->data[0] = 0.234122;
     expected->data[1] = 0.031685;
     expected->data[2] = 0.086129;
@@ -523,9 +523,9 @@ void test_vector_softmax()
         failures++;
     }
 
-    tensor_destruct(t);
-    tensor_destruct(expected);
-    tensor_destruct(softmax);
+    tensor_destruct(t, true);
+    tensor_destruct(expected, true);
+    tensor_destruct(softmax, true);
 }
 
 int main() {

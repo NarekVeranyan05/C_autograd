@@ -16,7 +16,7 @@ volatile int failures = 0;
 void test_topological_sort_singleton()
 {
     int shape[2] = {1, 1};
-    struct Tensor *loss = create_tensor(shape, 2, NULL, 0, UNDEF);
+    struct Tensor *loss = create_tensor(shape, 2, NULL, 0, OP_UNDEF);
 
     struct Linked_list *sorted = topological_sort(loss);
     if (size(sorted) == 1 && get_at(sorted, 0) == loss)
@@ -36,8 +36,8 @@ void test_topological_sort_singleton()
 void test_topological_sort_deep()
 {
     int shape[2] = {1, 1};
-    struct Tensor *w1= create_tensor(shape, 2, NULL, 0, UNDEF);
-    struct Tensor *w2= create_tensor(shape, 2, NULL, 0, UNDEF);
+    struct Tensor *w1= create_tensor(shape, 2, NULL, 0, OP_UNDEF);
+    struct Tensor *w2= create_tensor(shape, 2, NULL, 0, OP_UNDEF);
     w1->data[0] = 2;
     w2->data[0] = 3;
 
@@ -89,8 +89,8 @@ void test_topological_sort_deep()
 void test_scalar_backprop_deep()
 {
     int shape[2] = {1, 1};
-    struct Tensor *w1= create_tensor(shape, 2, NULL, 0, UNDEF);
-    struct Tensor *w2= create_tensor(shape, 2, NULL, 0, UNDEF);
+    struct Tensor *w1= create_tensor(shape, 2, NULL, 0, OP_UNDEF);
+    struct Tensor *w2= create_tensor(shape, 2, NULL, 0, OP_UNDEF);
     w1->data[0] = 2;
     w2->data[0] = 3;
 
@@ -103,19 +103,19 @@ void test_scalar_backprop_deep()
     struct Tensor *loss = tensor_add(v3, v2);
     backprop(loss);
 
-    struct Tensor *grad_v3_expected = create_tensor(shape, 2, NULL, 0, UNDEF);
+    struct Tensor *grad_v3_expected = create_tensor(shape, 2, NULL, 0, OP_UNDEF);
     grad_v3_expected->data[0] = 1;
 
-    struct Tensor *grad_v2_expected = create_tensor(shape, 2, NULL, 0, UNDEF);
+    struct Tensor *grad_v2_expected = create_tensor(shape, 2, NULL, 0, OP_UNDEF);
     grad_v2_expected->data[0] = 4;
 
-    struct Tensor *grad_v1_expected = create_tensor(shape, 2, NULL, 0, UNDEF);
+    struct Tensor *grad_v1_expected = create_tensor(shape, 2, NULL, 0, OP_UNDEF);
     grad_v1_expected->data[0] = 4 * w2->data[0];
 
-    struct Tensor *grad_w1_expected = create_tensor(shape, 2, NULL, 0, UNDEF);
+    struct Tensor *grad_w1_expected = create_tensor(shape, 2, NULL, 0, OP_UNDEF);
     grad_w1_expected->data[0] = 5.99970;
 
-    struct Tensor *grad_w2_expected = create_tensor(shape, 2, NULL, 0, UNDEF);
+    struct Tensor *grad_w2_expected = create_tensor(shape, 2, NULL, 0, OP_UNDEF);
     grad_w2_expected->data[0] = 2.772588;
 
     int count = 0;
@@ -136,11 +136,11 @@ void test_scalar_backprop_deep()
         failures++;
     }
 
-    tensor_destruct(grad_v3_expected);
-    tensor_destruct(grad_v2_expected);
-    tensor_destruct(grad_v1_expected);
-    tensor_destruct(grad_w1_expected);
-    tensor_destruct(grad_w2_expected);
+    tensor_destruct(grad_v3_expected, true);
+    tensor_destruct(grad_v2_expected, true);
+    tensor_destruct(grad_v1_expected, true);
+    tensor_destruct(grad_w1_expected, true);
+    tensor_destruct(grad_w2_expected, true);
 }
 
 

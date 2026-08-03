@@ -30,6 +30,15 @@ add_executable(backward_test
         backprop/topological_sort.c
         backprop/topological_sort.h
         backprop/backprop.h
+        stack/linked_list.h
+        stack/linked_list.c
+        stack/stack.h
+        stack/stack_ll.c
+        model/linear.c
+        model/linear.h
+        backprop/optimisers/optimiser.h
+        backprop/optimisers/sdg.c
+        backprop/optimisers/adam.c
 )
 
 # 2. Executable for Stack tests

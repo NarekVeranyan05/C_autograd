@@ -39,43 +39,43 @@ struct Tensor *create_tensor(int *shape, int ndims, struct Tensor **parents, int
 
     switch (op)
     {
-        case UNDEF:
+        case OP_UNDEF:
             t->backward = NULL;
             break;
-        case SUM:
+        case OP_SUM:
             t->backward = backward_sum;
             break;
-        case MATMUL:
+        case OP_MATMUL:
             t->backward = backward_matmul;
             break;
-        case MUL:
+        case OP_MUL:
             t->backward = backward_mul;
             break;
-        case TRANSPOSE:
+        case OP_TRANSPOSE:
             t->backward = backward_transpose;
             break;
-        case INVERSE:
+        case OP_INVERSE:
             // t->backward = backward_inverse; FIXME
             break;
-        case SCALE:
+        case OP_SCALE:
             t->backward = backward_scale;
             break;
-        case SIGMOID:
+        case OP_SIGMOID:
             t->backward = backward_sigmoid;
             break;
-        case SOFTMAX:
+        case OP_SOFTMAX:
             t->backward = backward_softmax;
             break;
-        case RELU:
+        case OP_RELU:
             t->backward = backward_ReLU;
             break;
-        case EXP:
+        case OP_EXP:
             t->backward = backward_exp;
             break;
-        case LOG:
+        case OP_LOG:
             t->backward = backward_log;
             break;
-        case POW2:
+        case OP_POW2:
             // t->backward = backward_pow2; FIXME
             break;
     }
@@ -102,7 +102,7 @@ void init_empty(const struct Tensor *t)
 
 void init_grad(struct Tensor *t)
 {
-    t->grad = create_tensor(t->shape, t->ndims, &t, 1, UNDEF);
+    t->grad = create_tensor(t->shape, t->ndims, &t, 1, OP_UNDEF);
     init_empty(t->grad);
 }
 
@@ -113,7 +113,7 @@ struct Tensor *tensor_matmul(struct Tensor *a, struct Tensor *b)
 
     struct Tensor *parents[2] = {a, b};
 
-    struct Tensor *prod = create_tensor(shape, a->ndims, parents, 2, MATMUL);
+    struct Tensor *prod = create_tensor(shape, a->ndims, parents, 2, OP_MATMUL);
     for (int i = 0; i < a->shape[0]; i++) // i-th row of the product
     {
         for (int j = 0; j < b->shape[1]; j++) // j-th column of the product
@@ -141,7 +141,7 @@ struct Tensor *tensor_mul(struct Tensor *a, struct Tensor *b)
 
     struct Tensor *parents[2] = {a, b};
 
-    struct Tensor *t = create_tensor(a->shape, a->ndims, parents, 2, MUL);
+    struct Tensor *t = create_tensor(a->shape, a->ndims, parents, 2, OP_MUL);
     int size = 1;
     for (int i = 0; i < a->ndims; i++)
         size *= a->shape[i];
@@ -164,7 +164,7 @@ struct Tensor *tensor_add(struct Tensor *a, struct Tensor *b)
 
     struct Tensor *parents[2] = {a, b};
 
-    struct Tensor *t = create_tensor(a->shape, a->ndims, parents, 2, SUM);
+    struct Tensor *t = create_tensor(a->shape, a->ndims, parents, 2, OP_SUM);
     for (int i = 0; i < size; i++)
     {
         t->data[i] = a->data[i] + b->data[i];
@@ -181,7 +181,7 @@ struct Tensor *tensor_transpose(struct Tensor *t)
 
     struct Tensor *parents[1] = {t};
 
-    struct Tensor *transposed = create_tensor(new_shape, t->ndims, parents, 1, TRANSPOSE);
+    struct Tensor *transposed = create_tensor(new_shape, t->ndims, parents, 1, OP_TRANSPOSE);
 
     for (int i = 0; i < t->shape[0]; i++)
     {
@@ -199,7 +199,7 @@ const double epsilon = 0.0001;
 struct Tensor *tensor_invert(struct Tensor *t)
 {
     struct Tensor *parents[1] = {t};
-    struct Tensor *inverse = create_tensor(t->shape, t->ndims, parents, 1, INVERSE);
+    struct Tensor *inverse = create_tensor(t->shape, t->ndims, parents, 1, OP_INVERSE);
 
     int size = 1;
     for (int i = 0; i < t->ndims; i++)
@@ -214,11 +214,11 @@ struct Tensor *tensor_invert(struct Tensor *t)
 struct Tensor *tensor_scale(const double scale, struct Tensor *t)
 {
     int shape[2] = {1, 1};
-    struct Tensor *scale_tensor = create_tensor(shape, 2, NULL, 0, UNDEF);
+    struct Tensor *scale_tensor = create_tensor(shape, 2, NULL, 0, OP_UNDEF);
     scale_tensor->data[0] = scale;
 
     struct Tensor *parents[2] = {scale_tensor, t};
-    struct Tensor *scaled = create_tensor(t->shape, t->ndims, parents, 2, SCALE);
+    struct Tensor *scaled = create_tensor(t->shape, t->ndims, parents, 2, OP_SCALE);
 
     int size = 1;
     for (int i = 0; i < t->ndims; i++)
@@ -233,7 +233,7 @@ struct Tensor *tensor_scale(const double scale, struct Tensor *t)
 struct Tensor *tensor_log(struct Tensor *t)
 {
     struct Tensor *parents[1] = {t};
-    struct Tensor *logged = create_tensor(t->shape, t->ndims, parents, 1, LOG);
+    struct Tensor *logged = create_tensor(t->shape, t->ndims, parents, 1, OP_LOG);
 
     int size = 1;
     for (int i = 0; i < t->ndims; i++)
@@ -248,7 +248,7 @@ struct Tensor *tensor_log(struct Tensor *t)
 struct Tensor *tensor_exp(struct Tensor *t)
 {
     struct Tensor *parents[1] = {t};
-    struct Tensor *exponential = create_tensor(t->shape, t->ndims, parents, 1, EXP);
+    struct Tensor *exponential = create_tensor(t->shape, t->ndims, parents, 1, OP_EXP);
 
     int size = 1;
     for (int i = 0; i < t->ndims; i++)
@@ -263,7 +263,7 @@ struct Tensor *tensor_exp(struct Tensor *t)
 struct Tensor *tensor_ReLU(struct Tensor *t)
 {
     struct Tensor *parents[1] = {t};
-    struct Tensor *tensor_activated = create_tensor(t->shape, t->ndims, parents, 1, RELU);
+    struct Tensor *tensor_activated = create_tensor(t->shape, t->ndims, parents, 1, OP_RELU);
 
     int size = 1;
     for (int i = 0; i < t->ndims; i++)
@@ -278,7 +278,7 @@ struct Tensor *tensor_ReLU(struct Tensor *t)
 struct Tensor *tensor_sigmoid(struct Tensor *t)
 {
     struct Tensor *parents[1] = {t};
-    struct Tensor *tensor_activated = create_tensor(t->shape, t->ndims, parents, 1, SIGMOID);
+    struct Tensor *tensor_activated = create_tensor(t->shape, t->ndims, parents, 1, OP_SIGMOID);
 
     int size = 1;
     for (int i = 0; i < t->ndims; i++)
@@ -300,7 +300,7 @@ struct Tensor *tensor_softmax(struct Tensor *t)
 
     // computing the exponents for scalars
     struct Tensor *parents[1] = {t};
-    struct Tensor *exponents = create_tensor(t->shape, t->ndims, parents, 1, SOFTMAX);
+    struct Tensor *exponents = create_tensor(t->shape, t->ndims, parents, 1, OP_SOFTMAX);
     double sum_of_exponents = 0;
     for (int i = 0; i < size; i++)
     {
@@ -323,7 +323,7 @@ struct Tensor *tensor_selector(struct Tensor *t, int index)
     {
         // initialising indicator
         int shape[2] = { 1, t->shape[0] }; // 1 x n
-        struct Tensor *indicator = create_tensor(shape, t->ndims, NULL, 0, UNDEF);
+        struct Tensor *indicator = create_tensor(shape, t->ndims, NULL, 0, OP_UNDEF);
         init_empty(indicator);
         indicator->data[index] = 1;
 
@@ -333,7 +333,7 @@ struct Tensor *tensor_selector(struct Tensor *t, int index)
     {
         // initialising indicator
         int shape[2] = { t->shape[1], 1 }; // n x 1
-        struct Tensor *indicator = create_tensor(shape, t->ndims, NULL, 0, UNDEF);
+        struct Tensor *indicator = create_tensor(shape, t->ndims, NULL, 0, OP_UNDEF);
         init_empty(indicator);
         indicator->data[index] = 1;
 
@@ -362,7 +362,10 @@ bool check_equal(struct Tensor *a, struct Tensor *b)
     return equal;
 }
 
-void tensor_destruct(struct Tensor *t)
+void tensor_destruct(
+    struct Tensor *t,
+    bool delete_data
+)
 {
     if (t->grad != NULL)
     {
@@ -372,7 +375,9 @@ void tensor_destruct(struct Tensor *t)
         free(t->grad);
     }
 
-    free(t->data);
+    if (delete_data)
+        free(t->data);
+
     free(t->shape);
     free(t->parents);
     free(t);
