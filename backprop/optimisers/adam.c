@@ -2,7 +2,7 @@
 // Created by Narek Veranian on 2026-08-03.
 //
 
-#include <c++/v1/cstdlib>
+#include <stdlib.h>
 
 #include "optimiser.h"
 
@@ -10,7 +10,7 @@ typedef struct Adam {
     struct Optimiser optimiser;
 } Adam;
 
-Adam *create_adam(double gamma, double alpha, double learning_rate, struct Tensor *target, struct Tensor **data, int data_size)
+Adam *create_adam(struct Tensor *target, struct Tensor **data, int data_size, double gamma, double alpha, double learning_rate, int num_epochs)
 {
     Adam *adam = malloc(sizeof(Adam));
 

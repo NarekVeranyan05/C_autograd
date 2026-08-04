@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 11)
 include_directories(
         backward
         tensor
-        stack
+        assets
         backprop
 )
 
@@ -30,24 +30,31 @@ add_executable(backward_test
         backprop/topological_sort.c
         backprop/topological_sort.h
         backprop/backprop.h
-        stack/linked_list.h
-        stack/linked_list.c
-        stack/stack.h
-        stack/stack_ll.c
-        model/linear.c
-        model/linear.h
+        assets/linked_list.h
+        assets/linked_list.c
+        assets/stack.h
+        assets/stack_ll.c
+        model/layers.c
+        model/layers.h
         backprop/optimisers/optimiser.h
         backprop/optimisers/sdg.c
         backprop/optimisers/adam.c
+        model/model.c
+        model/model.h
+        assets/queue.h
+        assets/queue_ll.c
+        model/output_layer.c
+        model/loss.h
+        model/loss.c
 )
 
 # 2. Executable for Stack tests
 add_executable(stack_test
-        stack/stack.h
-        stack/linked_list.h
-        stack/linked_list.c
-        stack/stack_ll.c
-        stack/linked_list.test.c
+        assets/stack.h
+        assets/linked_list.h
+        assets/linked_list.c
+        assets/stack_ll.c
+        assets/linked_list.test.c
 )
 
 # 3. Executable for Topological sort tests
@@ -56,10 +63,10 @@ add_executable(topological_sort_test
         backward/backward.h
         tensor/tensor.c
         tensor/tensor.h
-        stack/stack.h
-        stack/linked_list.h
-        stack/linked_list.c
-        stack/stack_ll.c
+        assets/stack.h
+        assets/linked_list.h
+        assets/linked_list.c
+        assets/stack_ll.c
         backprop/backprop.c
         backprop/topological_sort.c
         backprop/topological_sort.h

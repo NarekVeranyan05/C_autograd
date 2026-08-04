@@ -2,28 +2,35 @@
 // Created by Narek Veranian on 2026-08-03.
 //
 
-#include "linear.h"
+#include "layers.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <time.h>
 
 #include "tensor.h"
 
-typedef struct Linear {
+struct Tensor *(*activations[ACTIVATION_COUNT])(struct Tensor *) = {
+    [RELU]    = tensor_ReLU,
+    [SIGMOID] = tensor_sigmoid,
+    [SOFTMAX] = tensor_softmax
+};
+
+typedef struct Linear_layer {
     struct Tensor *W;
     struct Tensor *b;
     struct Tensor *(*activation)(struct Tensor *t);
-} Linear;
+} Linear_layer;
 
 // Desired range boundaries for the random floats
 static const double max_val =  1e-6;
 static const double min_val = -1e-6;
 
-Linear *create_linear_layer(struct Tensor *(*activation)(struct Tensor *t), int input_size, int num_neurons)
+Linear_layer *create_linear_layer(enum Activation activation, int input_size, int num_neurons)
 {
     srand((unsigned int)time(NULL));
 
-    Linear *ll = malloc(sizeof(Linear));
+    Linear_layer *ll = malloc(sizeof(Linear_layer));
 
     // (1) NEURON WEIGHTS
     int shape1[2] = {input_size, num_neurons};
@@ -51,13 +58,32 @@ Linear *create_linear_layer(struct Tensor *(*activation)(struct Tensor *t), int 
         ll->b->data[i] = min_val + scale * (max_val - min_val);
     }
 
-    ll->activation = activation;
+    ll->activation = activations[activation];
 
     return ll;
 }
 
-struct Tensor *forward(const Linear *lin_layer, struct Tensor *input) {
+void destruct_linear_layer(Linear_layer *ll)
+{
+    assert(ll != NULL);
+
+    tensor_destruct(ll->W, true);
+    tensor_destruct(ll->b, true);
+    free(ll);
+}
+
+struct Tensor *forward(const Linear_layer *lin_layer, struct Tensor *input) {
     struct Tensor *pre_activation = tensor_add(tensor_matmul(input, lin_layer->W), lin_layer->b);
     return lin_layer->activation(pre_activation);
+}
+
+int get_input_size(const Linear_layer *lin_layer)
+{
+    return lin_layer->W->shape[0];
+}
+
+int num_neurons(const Linear_layer *lin_layer)
+{
+    return lin_layer->W->shape[1];
 }
 
